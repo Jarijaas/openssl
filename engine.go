@@ -20,6 +20,7 @@ package openssl
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 	"unsafe"
@@ -47,4 +48,11 @@ func EngineById(name string) (*Engine, error) {
 		C.ENGINE_free(e.e)
 	})
 	return e, nil
+}
+
+func SetEngineAsDefault(eng *Engine) error {
+	if C.ENGINE_set_default(eng.e, C.ENGINE_METHOD_ALL) == 0 {
+		return errors.New("could not set engine as default")
+	}
+	return nil
 }

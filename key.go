@@ -15,6 +15,7 @@
 package openssl
 
 // #include "shim.h"
+// #include "openssl/engine.h"
 import "C"
 
 import (
@@ -270,6 +271,22 @@ func (key *pKey) MarshalPKIXPublicKeyDER() (der_block []byte,
 	}
 
 	return ioutil.ReadAll(asAnyBio(bio))
+}
+
+func EngineLoadPrivateKey(engine *Engine, privKeyPath string) (PrivateKey, error) {
+	cPrivKeyPath := C.CString(privKeyPath)
+	defer C.free(unsafe.Pointer(cPrivKeyPath))
+
+	key := C.ENGINE_load_private_key(engine.e, cPrivKeyPath, nil, nil)
+	if key == nil {
+		return nil, errors.New("failed to load private key")
+	}
+
+	p := &pKey{key: key}
+	runtime.SetFinalizer(p, func(p *pKey) {
+		C.EVP_PKEY_free(p.key)
+	})
+	return p, nil
 }
 
 // LoadPrivateKeyFromPEM loads a private key from a PEM-encoded block.
