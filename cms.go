@@ -55,7 +55,7 @@ func VerifyAndGetSignedDataFromPKCS7(der []byte) ([]byte, error) {
 	}
 
 	bufLen := C.BIO_ctrl(out, C.BIO_CTRL_PENDING, 0, nil)
-	buffer := C.X_OPENSSL_malloc(C.uint(bufLen))
+	buffer := C.X_OPENSSL_malloc(C.size_t(bufLen))
 	if buffer == nil {
 		return nil, errors.New("failed allocating buffer for signed data")
 	}
